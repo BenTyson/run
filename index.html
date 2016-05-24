@@ -1,1 +1,88 @@
-Run. Run away. 
+<html>
+<head>
+<!--Run. Run away.  -->
+    
+<script type="text/javascript">
+
+var runDiv;
+var dotSize = 10;
+
+function ready() {
+    
+    runDiv = document.createElement("DIV");
+    
+    var y = window.innerHeight - dotSize;
+    var x= Math.floor(window.innerWidth / 2);
+    var startPosStyle = "left: " + x + "px; top: " + y + "px; "
+    
+    
+    var styleAttr = document.createAttribute("style");
+    styleAttr.value = "position:absolute; background-color:red; width:"+ dotSize +"px; height:"+ dotSize + "px; " + startPosStyle;                           // Set the value of the class attribute
+    runDiv.setAttributeNode(styleAttr);  
+    
+    document.body.appendChild(runDiv);
+    
+}
+
+document.onkeydown = checkKey;
+
+function checkKey(e) {
+
+    e = e || window.event;
+
+    if (e.keyCode == '38') {
+        // move div up
+        runStep("up");
+    }
+    else if (e.keyCode == '40') {
+        //ignore down
+        
+    }
+    else if (e.keyCode == '37') {
+       //move div left
+       runStep("lt");
+    }
+    else if (e.keyCode == '39') {
+       //move div right
+       runStep("rt");
+    }
+
+}
+
+function runStep(stepKey) {
+    
+    switch (stepKey) {
+        case "up":
+            var newTop = (parseInt(runDiv.style.top) - dotSize) + "px";
+            //console.log(newTop, runDiv.style.top);
+            runDiv.style.top = newTop;
+            break;
+        case "rt":
+            var newLeft = (parseInt(runDiv.style.left) + dotSize) + "px";
+            runDiv.style.left = newLeft;
+            break;
+        case "lt":
+            var newLeft = (parseInt(runDiv.style.left) - dotSize) + "px";
+            runDiv.style.left = newLeft;            
+            break;
+        default:
+        
+    }
+    
+    
+}
+    
+    
+    
+</script>
+    
+    
+</head> 
+<body onLoad="ready()">
+    <h3>Run. Run away.</h3>
+</body>
+    
+</html>
+
+
+ 
