@@ -8,8 +8,7 @@ var runDiv;
 var dotSize = 15;
 
 var lineLen = 8;
-var numLines = 8
-;
+var numLines = 8;
 var lineStepSize = 15;
 
 var lineInterval = Math.floor(window.innerHeight / numLines);
@@ -39,9 +38,12 @@ function ready() {
     
     document.body.appendChild(runDiv);
 
+
 }
 
 document.onkeydown = checkKey;
+
+
 
 function checkKey(e) {
 
@@ -69,18 +71,20 @@ function checkKey(e) {
 function runStep(stepKey) {
     
     var processStep = true;
+    var newTop = runDiv.style.top;
+    var newLeft = runDiv.style.left;;
     
     if(parseInt(runDiv.style.left) < 0) {
         //dot going out of window to left
         processStep = false;
-        var newLeft = "0px";
+        newLeft = "0px";
         runDiv.style.left = newLeft;        
     }
     
     if(parseInt(runDiv.style.left) + dotSize > window.innerWidth) {
         //dot going out of window to right
         processStep = false;
-        var newLeft = (window.innerWidth - dotSize) + "px";
+        newLeft = (window.innerWidth - dotSize) + "px";
         runDiv.style.left = newLeft;    
         
     }
@@ -88,39 +92,48 @@ function runStep(stepKey) {
     if (parseInt(runDiv.style.top) + dotSize > window.innerHeight) {
         //dot going out of window to bottom
         processStep = false;
-        var newTop = (window.innerHeight - dotSize) + "px";
+        newTop = (window.innerHeight - dotSize) + "px";
         runDiv.style.top = newTop;
     }
     
     if(parseInt(runDiv.style.top) < (Math.floor(window.innerHeight * endzonePercent))) {
         //dot going up far enough to need repositioning
         processStep = false;
-        var newTop = (Math.floor(window.innerHeight) * repositionPercent) + "px";
+        newTop = (Math.floor(window.innerHeight) * repositionPercent) + "px";
         runDiv.style.top = newTop;  
     }
     
+
     if(processStep == true) {
         switch (stepKey) {
             case "up":
-                var newTop = (parseInt(runDiv.style.top) - dotSize) + "px";
+                newTop = (parseInt(runDiv.style.top) - dotSize) + "px";
                 runDiv.style.top = newTop;
                 stepLines("up");
                 break;
             case "dn":
-                var newTop = (parseInt(runDiv.style.top) + dotSize) + "px";
+                newTop = (parseInt(runDiv.style.top) + dotSize) + "px";
                 runDiv.style.top = newTop;  
                 stepLines("dn");
                 break;
             case "rt":
-                var newLeft = (parseInt(runDiv.style.left) + dotSize) + "px";
+                newLeft = (parseInt(runDiv.style.left) + dotSize) + "px";
                 runDiv.style.left = newLeft;
                 break;
             case "lt":
-                var newLeft = (parseInt(runDiv.style.left) - dotSize) + "px";
+                newLeft = (parseInt(runDiv.style.left) - dotSize) + "px";
                 runDiv.style.left = newLeft;            
                 break;
             default:
         }
+        
+        var rnd = Math.random();
+        if (rnd < .1) { 
+console.log("tackled", newTop)            
+            makeTackler(0, newTop);
+        }
+        
+        
     }
 }
 
@@ -224,6 +237,41 @@ function setLines() {
 //console.log(yy, y, line.style.top);  
     }
 
+}
+
+
+function makeTackler(tklType, startY) {
+    
+    var tklSize = 10;
+    var tklDiv = document.createElement("DIV");
+        
+    var styleAttr = document.createAttribute("style");
+    styleAttr.value = "position:absolute; background-color:aqua; width:"+ tklSize +"px; height:" + tklSize + "px; top:" + startY;             
+    tklDiv.setAttributeNode(styleAttr);  
+    
+    document.body.appendChild(tklDiv);   
+    
+    
+    
+    var timer = setInterval(runTkl, 10);
+    var curPx = 0;
+    
+    
+    function runTkl() {
+        
+        if(curPx >= window.innerWidth) {
+            clearInterval(timer);
+            document.body.removeChild(tklDiv);
+        } else {
+            
+            tklDiv.style.left = curPx + "px";
+            curPx = curPx + 4;
+            
+        }
+        
+    }
+    
+    
 }
 
 
