@@ -5,23 +5,40 @@
 <script type="text/javascript">
 
 var runDiv;
-var dotSize = 10;
+var dotSize = 15;
+
+var lineLen = 8;
+var numLines = 8
+;
+var lineStepSize = 15;
+
+var lineInterval = Math.floor(window.innerHeight / numLines);
+
+var lines;
+var firstLine;
+var lastLine;
+
+var endzonePercent = 0.2; //when dot enters this zone it gets put back to reposition
+var repositionPercent = 0.5;
 
 function ready() {
     
+    createLines();
+    setLines();
+    
+
     runDiv = document.createElement("DIV");
     
     var y = window.innerHeight - dotSize;
     var x= Math.floor(window.innerWidth / 2);
     var startPosStyle = "left: " + x + "px; top: " + y + "px; "
     
-    
     var styleAttr = document.createAttribute("style");
-    styleAttr.value = "position:absolute; background-color:red; width:"+ dotSize +"px; height:"+ dotSize + "px; " + startPosStyle;                           // Set the value of the class attribute
+    styleAttr.value = "position:absolute; background-color:red; width:"+ dotSize +"px; height:"+ dotSize + "px; " + startPosStyle; 
     runDiv.setAttributeNode(styleAttr);  
     
     document.body.appendChild(runDiv);
-    
+
 }
 
 document.onkeydown = checkKey;
@@ -35,7 +52,8 @@ function checkKey(e) {
         runStep("up");
     }
     else if (e.keyCode == '40') {
-        //ignore down
+        //move div down
+        runStep("dn");
         
     }
     else if (e.keyCode == '37') {
@@ -46,40 +64,176 @@ function checkKey(e) {
        //move div right
        runStep("rt");
     }
-
 }
 
 function runStep(stepKey) {
     
-    switch (stepKey) {
-        case "up":
-            var newTop = (parseInt(runDiv.style.top) - dotSize) + "px";
-            //console.log(newTop, runDiv.style.top);
-            runDiv.style.top = newTop;
-            break;
-        case "rt":
-            var newLeft = (parseInt(runDiv.style.left) + dotSize) + "px";
-            runDiv.style.left = newLeft;
-            break;
-        case "lt":
-            var newLeft = (parseInt(runDiv.style.left) - dotSize) + "px";
-            runDiv.style.left = newLeft;            
-            break;
-        default:
+    var processStep = true;
+    
+    if(parseInt(runDiv.style.left) < 0) {
+        //dot going out of window to left
+        processStep = false;
+        var newLeft = "0px";
+        runDiv.style.left = newLeft;        
+    }
+    
+    if(parseInt(runDiv.style.left) + dotSize > window.innerWidth) {
+        //dot going out of window to right
+        processStep = false;
+        var newLeft = (window.innerWidth - dotSize) + "px";
+        runDiv.style.left = newLeft;    
         
+    }
+    
+    if (parseInt(runDiv.style.top) + dotSize > window.innerHeight) {
+        //dot going out of window to bottom
+        processStep = false;
+        var newTop = (window.innerHeight - dotSize) + "px";
+        runDiv.style.top = newTop;
+    }
+    
+    if(parseInt(runDiv.style.top) < (Math.floor(window.innerHeight * endzonePercent))) {
+        //dot going up far enough to need repositioning
+        processStep = false;
+        var newTop = (Math.floor(window.innerHeight) * repositionPercent) + "px";
+        runDiv.style.top = newTop;  
+    }
+    
+    if(processStep == true) {
+        switch (stepKey) {
+            case "up":
+                var newTop = (parseInt(runDiv.style.top) - dotSize) + "px";
+                runDiv.style.top = newTop;
+                stepLines("up");
+                break;
+            case "dn":
+                var newTop = (parseInt(runDiv.style.top) + dotSize) + "px";
+                runDiv.style.top = newTop;  
+                stepLines("dn");
+                break;
+            case "rt":
+                var newLeft = (parseInt(runDiv.style.left) + dotSize) + "px";
+                runDiv.style.left = newLeft;
+                break;
+            case "lt":
+                var newLeft = (parseInt(runDiv.style.left) - dotSize) + "px";
+                runDiv.style.left = newLeft;            
+                break;
+            default:
+        }
+    }
+}
+
+function stepLines(stepKey) {
+    
+    var stepLimit;
+    var stepDir;
+ 
+    if(stepKey == "up") {
+        //target moving up, lines go down
+        stepLimit = Math.floor(window.innerHeight) - 1;
+        var lineAt = parseInt(lastLine.style.top); // + lineInterval;
+        stepDir = 1;
+        if(lineAt > stepLimit) {
+            //we have passed limit
+            setLines();
+//console.log("downward limit - reset lines");            
+        } else {
+            //we roll
+            moveLines(lineStepSize*stepDir);
+//console.log("move lines down");
+        }
+
+    } else {
+        //target moving down, lines go up
+        stepLimit = 0;
+        var lineAt = parseInt(firstLine.style.top);
+        stepDir = -1;
+        if(lineAt <= stepLimit) {
+            //we have passed limit
+            setLines();
+//console.log("upward limit - reset lines");            
+        } else {
+            //we roll
+            moveLines(lineStepSize*stepDir);
+//console.log("move lines up");
+        }
     }
     
     
 }
+
+function moveLines(shiftStep) {
+
+    for (var i = 0; i < lines.length; i++) {
+         {
+            var oldTop = parseInt(lines[i].style.top);
+            var newTop = ( oldTop + shiftStep) + "px";
+            lines[i].style.top = newTop;
+//console.log(oldTop, newTop, lineStepSize*stepDir);
+        }
+    }
+}
+
+
+function createLines() {
+
+    for (var y = 0; y < (window.innerHeight - lineInterval); y = y + lineInterval) {
+
+        var lineDiv = document.createElement("DIV");
+        
+        var styleAttr = document.createAttribute("style");
+        styleAttr.value = "position:absolute; background-color:black; width:"+ lineLen +"px; height:1px;";             
+        lineDiv.setAttributeNode(styleAttr);  
+
+        var classAttr =  document.createAttribute("class");
+        classAttr.value = "lineDiv";
+        lineDiv.setAttributeNode(classAttr); 
+        
+        var idAttr =  document.createAttribute("id");
+        idAttr.value = "line" + y;
+        lineDiv.setAttributeNode(idAttr); 
+        
+        document.body.appendChild(lineDiv);        
+    }
+    
+    //set globals - hak
+    lines = document.getElementsByClassName("lineDiv");
+    firstLine = lines[0];
+    lastLine = lines[lines.length-1];
+    
+    //originally create the grad lines - run once 
+    //NOTE add window change reset
+    
+    console.log("initialized lines"); 
+  
+}
+
+
+function setLines() {
     
     
+
+    var lines = document.getElementsByClassName("lineDiv");
+    var yy = 0;
+    
+    for (var y = 0; y < (window.innerHeight - lineInterval); y = y + lineInterval) {
+        var line = lines[yy]
+        yy++;
+        line.style.top = y + "px";
+//console.log(yy, y, line.style.top);  
+    }
+
+}
+
+
     
 </script>
     
     
 </head> 
 <body onLoad="ready()">
-    <h3>Run. Run away.</h3>
+    <!--<h3>Run. Run away.</h3>-->
 </body>
     
 </html>
