@@ -17,14 +17,14 @@ var lines;
 var firstLine;
 var lastLine;
 
-var endzonePercent = 0.2; //when dot enters this zone it gets put back to reposition
-var repositionPercent = 0.5;
+var endzonePercent = 0.05; //when dot enters this zone it gets put back to reposition
+var repositionPercent = 0.1;
 
 function ready() {
     
+    
     createLines();
     setLines();
-    
 
     runDiv = document.createElement("DIV");
     
@@ -128,10 +128,16 @@ function runStep(stepKey) {
         }
         
         var rnd = Math.random();
-        if (rnd < .1) { 
-console.log("tackled", newTop)            
-            makeTackler(0, newTop);
+        var rnd2 = Math.random();
+        
+        var tklType = 0;
+        if (rnd2 < .5) {
+            tklType = 1;
         }
+        if (rnd < .3) { 
+            makeTackler(tklType, newTop);
+        }
+        
         
         
     }
@@ -225,8 +231,6 @@ function createLines() {
 
 function setLines() {
     
-    
-
     var lines = document.getElementsByClassName("lineDiv");
     var yy = 0;
     
@@ -243,37 +247,115 @@ function setLines() {
 function makeTackler(tklType, startY) {
     
     var tklSize = 10;
+    var tklSpeed = 10; 
     var tklDiv = document.createElement("DIV");
-        
+    
+    
     var styleAttr = document.createAttribute("style");
     styleAttr.value = "position:absolute; background-color:aqua; width:"+ tklSize +"px; height:" + tklSize + "px; top:" + startY;             
     tklDiv.setAttributeNode(styleAttr);  
     
     document.body.appendChild(tklDiv);   
+
     
+    var curPx;
+    switch(tklType){
+        case 1:
+            curPx = 0;
+            break;
+        case 0:
+            curPx = window.innerWidth - dotSize;
+            break;
+        default:
+    }
     
-    
-    var timer = setInterval(runTkl, 10);
-    var curPx = 0;
+    var timer = setInterval(runTkl, tklSpeed);
     
     
     function runTkl() {
         
-        if(curPx >= window.innerWidth) {
-            clearInterval(timer);
-            document.body.removeChild(tklDiv);
-        } else {
-            
-            tklDiv.style.left = curPx + "px";
-            curPx = curPx + 4;
+//console.log("tklType", tklType)
+        
+        switch(tklType) {
+        case 1:
+            //left to right tackle
+            if(curPx >= window.innerWidth) {
+                clearInterval(timer);
+                document.body.removeChild(tklDiv);
+            } else {
+                checkHit(curPx,parseInt(startY));
+                tklDiv.style.left = curPx + "px";
+                curPx = curPx + 4;
+            }
+            break;
+        case 0:
+            //right to left tackle
+            if(curPx <= 0) {
+                clearInterval(timer);
+                document.body.removeChild(tklDiv);
+            } else {
+                checkHit(curPx,parseInt(startY));
+                tklDiv.style.left = curPx + "px";
+                curPx = curPx - 4;
+                
+            }
+            break;
+        case 2:
+            //top to bottom tackle
+            if(curPx <= 0) {
+                clearInterval(timer);
+                document.body.removeChild(tklDiv);
+            } else {
+                checkHit(curPx,parseInt(startY));
+                tklDiv.style.left = curPx + "px";
+                curPx = curPx - 4;
+                
+            }
+            break;           
+        default:
             
         }
         
+    }
+
+}
+
+function checkHit(curPx,startY) {
+    
+    var predatorX = curPx + 3;
+    var predatorY = startY + 3;
+
+    var targetX = parseInt(runDiv.style.left);
+    var targetY = parseInt(runDiv.style.top);
+
+//console.log(predatorX,predatorY,targetX,targetY);
+    
+    if(Math.abs(predatorX - targetX) <= 5 && Math.abs(predatorY - targetY) <= 5) {
+        
+        //clearBody();
+        var hitMsg = document.createElement("DIV");
+        var txtNode = document.createTextNode("HIT (start again)"); 
+        hitMsg.appendChild(txtNode);
+    
+        var styleAttr = document.createAttribute("style");
+        styleAttr.value = "background-color:red;font-size:24pt;text-align:center";             
+        hitMsg.setAttributeNode(styleAttr);  
+        document.body.appendChild(hitMsg);
+        
+        var hitTimer = setInterval(clearBody, 1000);
+
     }
     
     
 }
 
+
+function clearBody() {
+    
+    window.location.reload()
+    
+
+}
 
     
 </script>
